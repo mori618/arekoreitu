@@ -49,6 +49,12 @@ export const SwipeableTaskCard: React.FC<SwipeableTaskCardProps> = ({
   const controls = useAnimation();
   const SWIPE_THRESHOLD = 110; // トリガーするスワイプ距離(px)
 
+  const isOverdue = 
+    !!(task.intervalDays && 
+    task.intervalDays > 0 && 
+    lastRecordTime && 
+    (Date.now() - lastRecordTime > task.intervalDays * 24 * 60 * 60 * 1000));
+
   // 1分ごとに経過時間を更新
   useEffect(() => {
     setRelativeTime(formatRelativeTime(lastRecordTime));
@@ -162,9 +168,14 @@ export const SwipeableTaskCard: React.FC<SwipeableTaskCardProps> = ({
         <div className="task-card-header">
           <div className="task-card-info">
             <h3 className="task-card-name">{task.name}</h3>
-            <p className="task-card-time">
-              <Clock size={14} />
-              前回: <span className="task-card-time-highlight">{relativeTime}</span>
+            <p className="task-card-time" style={{ color: isOverdue ? '#ef4444' : 'var(--text-secondary)' }}>
+              <Clock size={14} style={{ color: isOverdue ? '#ef4444' : 'inherit' }} />
+              前回: <span className="task-card-time-highlight" style={{ color: isOverdue ? '#ef4444' : 'var(--text-primary)', fontWeight: isOverdue ? 700 : 500 }}>{relativeTime}</span>
+              {isOverdue && (
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, marginLeft: '6px', color: '#ef4444' }}>
+                  (期限切れ)
+                </span>
+              )}
             </p>
           </div>
         </div>

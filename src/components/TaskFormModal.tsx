@@ -5,7 +5,7 @@ import type { Task } from '../db';
 interface TaskFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { name: string; color: string; tags: string[] }) => void;
+  onSubmit: (data: { name: string; color: string; tags: string[]; intervalDays?: number }) => void;
   editingTask?: Task | null;
   existingTags?: string[];
 }
@@ -33,6 +33,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
   const [name, setName] = useState('');
   const [color, setColor] = useState(COLOR_PALETTE[6]); // デフォルトはインディゴ
   const [tagsInput, setTagsInput] = useState('');
+  const [intervalDays, setIntervalDays] = useState('');
 
   // 編集モードの場合の初期値設定
   useEffect(() => {
@@ -40,10 +41,12 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
       setName(editingTask.name);
       setColor(editingTask.color);
       setTagsInput(editingTask.tags.join(', '));
+      setIntervalDays(editingTask.intervalDays ? String(editingTask.intervalDays) : '');
     } else {
       setName('');
       setColor(COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)]); // ランダムに初期色を決定
       setTagsInput('');
+      setIntervalDays('');
     }
   }, [editingTask, isOpen]);
 
@@ -59,10 +62,13 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
       .map((tag) => tag.trim())
       .filter((tag) => tag.length > 0);
 
+    const parsedInterval = intervalDays.trim() ? parseInt(intervalDays.trim(), 10) : undefined;
+
     onSubmit({
       name: name.trim(),
       color,
       tags: Array.from(new Set(parsedTags)),
+      intervalDays: parsedInterval && parsedInterval > 0 ? parsedInterval : undefined,
     });
     onClose();
   };
@@ -104,7 +110,6 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
             <input
               type="text"
               className="form-input"
-              placeholder="例: お風呂掃除、エアコンのフィルター掃除"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -141,6 +146,19 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 </div>
               </div>
             )}
+          </div>
+
+          {/* 目標サイクル */}
+          <div className="form-group">
+            <label className="form-label">目標サイクル (日数)</label>
+            <input
+              type="number"
+              className="form-input"
+              placeholder="例: 7 (7日ごと、空欄で目標なし)"
+              value={intervalDays}
+              onChange={(e) => setIntervalDays(e.target.value)}
+              min="1"
+            />
           </div>
 
           {/* カラー選択 */}

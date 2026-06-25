@@ -18,6 +18,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   const [selectedDateStr, setSelectedDateStr] = useState<string>(
     `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   );
+  const [selectedTag, setSelectedTag] = useState<string>('すべて');
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth(); // 0-indexed
@@ -31,11 +32,50 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     return map;
   }, [tasks]);
 
-  // レコードを日付(YYYY-MM-DD)ごとにグループ化
+  // カレンダー用のタグ抽出
+  const allTags = useMemo(() => {
+    const tagsSet = new Set<string>();
+    tasks.forEach((t) => {
+      t.tags.forEach((tag) => tagsSet.add(tag));
+    });
+    return ['すべて', '期限切れ', ...Array.from(tagsSet)];
+  }, [tasks]);
+
+  // 各タスクの最新レコードをマップ化
+  const latestRecordsMap = useMemo(() => {
+    const map: { [taskId: string]: number } = {};
+    records.forEach((r) => {
+      if (!map[r.taskId] || r.executedAt > map[r.taskId]) {
+        map[r.taskId] = r.executedAt;
+      }
+    });
+    return map;
+  }, [records]);
+
+  // 選択されたタグ・期限切れに基づくレコードのフィルタリング
+  const filteredRecords = useMemo(() => {
+    return records.filter((record) => {
+      const task = tasksMap[record.taskId];
+      if (!task) return false;
+      if (selectedTag === 'すべて') return true;
+      if (selectedTag === '期限切れ') {
+        const lastTime = latestRecordsMap[task.id];
+        return (
+          task.intervalDays &&
+          task.intervalDays > 0 &&
+          lastTime &&
+          Date.now() - lastTime > task.intervalDays * 24 * 60 * 60 * 1000
+        );
+      }
+      return task.tags.includes(selectedTag);
+    });
+  }, [records, tasksMap, selectedTag, latestRecordsMap]);
+
+  // フィルタリングされたレコードを日付(YYYY-MM-DD)ごとにグループ化
   const recordsByDate = useMemo(() => {
     const groups: { [dateStr: string]: { record: DbRecord; task?: Task }[] } = {};
     
-    records.forEach((record) => {
+    filteredRecords.forEach((record) => {
       const d = new Date(record.executedAt);
       const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       
@@ -55,7 +95,7 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     });
 
     return groups;
-  }, [records, tasksMap]);
+  }, [filteredRecords, tasksMap]);
 
   // カレンダーの日付セルを生成
   const calendarDays = useMemo(() => {
@@ -111,6 +151,21 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+      {/* タグによる絞り込みチップ */}
+      {allTags.length > 1 && (
+        <div className="tag-filter-container" style={{ padding: '0 0 4px 0' }}>
+          {allTags.map((tag) => (
+            <button
+              key={tag}
+              className={`tag-chip ${selectedTag === tag ? 'active' : ''}`}
+              onClick={() => setSelectedTag(tag)}
+            >
+              {tag === 'すべて' || tag === '期限切れ' ? tag : `#${tag}`}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* カレンダーコントロール */}
       <div 
         className="glass-panel" 

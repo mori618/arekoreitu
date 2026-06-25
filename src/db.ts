@@ -6,6 +6,7 @@ export interface Task {
   color: string; // テーマカラーのHEXコード
   tags: string[]; // タグの配列
   createdAt: number; // 作成日時 (タイムスタンプ)
+  intervalDays?: number; // 目標サイクル (日数)
 }
 
 export interface Record {

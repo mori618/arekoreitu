@@ -18,6 +18,9 @@ export default function App() {
   // タブ選択状態
   const [activeTab, setActiveTab] = useState<'tasks' | 'calendar'>('tasks');
 
+  // ソート選択状態
+  const [sortBy, setSortBy] = useState<string>('createdAtDesc');
+
   // PWAインストール関連の状態
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBtn, setShowInstallBtn] = useState(false);
@@ -128,14 +131,58 @@ export default function App() {
     tasks.forEach((task) => {
       task.tags.forEach((tag) => tagsSet.add(tag));
     });
-    return ['すべて', ...Array.from(tagsSet)];
+    return ['すべて', '期限切れ', ...Array.from(tagsSet)];
   }, [tasks]);
 
   // 表示するタスクのフィルタリング
   const filteredTasks = useMemo(() => {
     if (selectedTag === 'すべて') return tasks;
+    if (selectedTag === '期限切れ') {
+      return tasks.filter((task) => {
+        const lastTime = latestRecordsMap[task.id];
+        return (
+          task.intervalDays &&
+          task.intervalDays > 0 &&
+          lastTime &&
+          Date.now() - lastTime > task.intervalDays * 24 * 60 * 60 * 1000
+        );
+      });
+    }
     return tasks.filter((task) => task.tags.includes(selectedTag));
-  }, [tasks, selectedTag]);
+  }, [tasks, selectedTag, latestRecordsMap]);
+
+  // フィルタリングされたタスクの並べ替え
+  const sortedTasks = useMemo(() => {
+    const list = [...filteredTasks];
+    if (sortBy === 'createdAtDesc') {
+      list.sort((a, b) => b.createdAt - a.createdAt);
+    } else if (sortBy === 'lastExecutedAsc') {
+      list.sort((a, b) => {
+        const timeA = latestRecordsMap[a.id] || 0;
+        const timeB = latestRecordsMap[b.id] || 0;
+        return timeA - timeB;
+      });
+    } else if (sortBy === 'lastExecutedDesc') {
+      list.sort((a, b) => {
+        const timeA = latestRecordsMap[a.id] || 0;
+        const timeB = latestRecordsMap[b.id] || 0;
+        return timeB - timeA;
+      });
+    } else if (sortBy === 'overdueUrgency') {
+      list.sort((a, b) => {
+        const getUrgencyScore = (task: Task) => {
+          const lastTime = latestRecordsMap[task.id];
+          if (!task.intervalDays || task.intervalDays <= 0) return -999999;
+          if (!lastTime) return 999999; // 未実施は最優先
+          const elapsed = Date.now() - lastTime;
+          const target = task.intervalDays * 24 * 60 * 60 * 1000;
+          return elapsed - target;
+        };
+        return getUrgencyScore(b) - getUrgencyScore(a);
+      });
+    }
+    return list;
+  }, [filteredTasks, sortBy, latestRecordsMap]);
 
   // ハンドラー: タスク完了の記録 (スワイプ成功時)
   const handleCompleteTask = async (taskId: string) => {
@@ -148,13 +195,14 @@ export default function App() {
   };
 
   // ハンドラー: タスク新規作成・編集のコミット
-  const handleFormSubmit = async (data: { name: string; color: string; tags: string[] }) => {
+  const handleFormSubmit = async (data: { name: string; color: string; tags: string[]; intervalDays?: number }) => {
     if (editingTask) {
       // 編集
       await db.tasks.update(editingTask.id, {
         name: data.name,
         color: data.color,
         tags: data.tags,
+        intervalDays: data.intervalDays,
       });
       setEditingTask(null);
     } else {
@@ -165,6 +213,7 @@ export default function App() {
         color: data.color,
         tags: data.tags,
         createdAt: Date.now(),
+        intervalDays: data.intervalDays,
       };
       await db.tasks.add(newTask);
     }
@@ -262,26 +311,55 @@ export default function App() {
                     className={`tag-chip ${selectedTag === tag ? 'active' : ''}`}
                     onClick={() => setSelectedTag(tag)}
                   >
-                    {tag === 'すべて' ? tag : `#${tag}`}
+                    {tag === 'すべて' || tag === '期限切れ' ? tag : `#${tag}`}
                   </button>
                 ))}
               </div>
             )}
 
+            {/* ソートセレクター */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '4px 0 12px 0', padding: '0 4px' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                {sortedTasks.length} 件のタスク
+              </span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="form-input"
+                style={{
+                  padding: '6px 28px 6px 12px',
+                  fontSize: '0.85rem',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  color: 'var(--text-primary)',
+                  outline: 'none',
+                }}
+              >
+                <option value="createdAtDesc">作成日 (新しい順)</option>
+                <option value="lastExecutedAsc">前回実行 (古い順)</option>
+                <option value="lastExecutedDesc">前回実行 (新しい順)</option>
+                <option value="overdueUrgency">期限超過/猶予順</option>
+              </select>
+            </div>
+
             {/* タスク一覧 */}
             <section className="task-list">
-              {filteredTasks.length === 0 ? (
+              {sortedTasks.length === 0 ? (
                 <div className="empty-state">
                   <Filter size={32} className="empty-state-icon" />
                   <h3>タスクが見つかりません</h3>
                   <p>
                     {selectedTag !== 'すべて' 
-                      ? `タグ「#${selectedTag}」の登録タスクはありません。` 
+                      ? selectedTag === '期限切れ'
+                        ? '期限切れのタスクはありません。順調です！'
+                        : `タグ「#${selectedTag}」の登録タスクはありません。` 
                       : '右下の「＋」ボタンから最初のタスクを作成しましょう！'}
                   </p>
                 </div>
               ) : (
-                filteredTasks.map((task) => (
+                sortedTasks.map((task) => (
                   <SwipeableTaskCard
                     key={task.id}
                     task={task}
