@@ -203,7 +203,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           {/* バージョン情報 */}
           <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '8px' }}>
-            <span>これいつ App v1.0.0</span>
+            <span>イツヤッタ App v1.0.0</span>
             <br />
             <span>完全ローカル保存型PWA (維持費無料)</span>
           </div>

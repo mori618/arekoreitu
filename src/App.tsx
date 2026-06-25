@@ -195,7 +195,7 @@ export default function App() {
           <div className="logo-icon">
             <Sparkles size={20} color="#ffffff" />
           </div>
-          <h1>これいつ</h1>
+          <h1>イツヤッタ</h1>
         </div>
         <div className="header-actions">
           {showInstallBtn && (

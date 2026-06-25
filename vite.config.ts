@@ -11,8 +11,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'これいつ',
-        short_name: 'これいつ',
+        name: 'イツヤッタ',
+        short_name: 'イツヤッタ',
         description: '「前回いつやったか」を爆速で記録・確認するアプリ',
         theme_color: '#0f172a',
         background_color: '#0f172a',
