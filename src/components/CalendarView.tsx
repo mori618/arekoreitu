@@ -302,9 +302,9 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                   {/* カラーバー */}
                   <div 
                     style={{ 
-                      width: '4px', 
+                      width: '8px', 
                       height: '24px', 
-                      borderRadius: '2px', 
+                      borderRadius: '4px', 
                       backgroundColor: task?.color || 'var(--text-muted)' 
                     }} 
                   />
