@@ -32,7 +32,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState(COLOR_PALETTE[6]); // デフォルトはインディゴ
-  const [tagsInput, setTagsInput] = useState('掃除, 習慣');
+  const [tagsInput, setTagsInput] = useState('');
 
   // 編集モードの場合の初期値設定
   useEffect(() => {
@@ -43,7 +43,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
     } else {
       setName('');
       setColor(COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)]); // ランダムに初期色を決定
-      setTagsInput('掃除, 習慣');
+      setTagsInput('');
     }
   }, [editingTask, isOpen]);
 
@@ -78,6 +78,9 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
       setTagsInput(newTags.join(', '));
     }
   };
+
+  const defaultTags = ['掃除', '習慣'];
+  const displayTags = Array.from(new Set([...defaultTags, ...existingTags]));
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -119,13 +122,13 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
             />
-            {existingTags.length > 0 && (
+            {displayTags.length > 0 && (
               <div style={{ marginTop: '8px' }}>
                 <span className="form-label" style={{ fontSize: '0.75rem', display: 'block', marginBottom: '6px' }}>
                   既存のタグから選択:
                 </span>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {existingTags.map((tag) => (
+                  {displayTags.map((tag) => (
                     <span
                       key={tag}
                       className="task-tag"

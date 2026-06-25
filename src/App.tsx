@@ -7,11 +7,16 @@ import { SwipeableTaskCard } from './components/SwipeableTaskCard';
 import { TaskFormModal } from './components/TaskFormModal';
 import { TaskDetailModal } from './components/TaskDetailModal';
 import { SettingsModal } from './components/SettingsModal';
+import { CalendarView } from './components/CalendarView';
+
 export default function App() {
   // モーダル表示状態
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
+  // タブ選択状態
+  const [activeTab, setActiveTab] = useState<'tasks' | 'calendar'>('tasks');
 
   // PWAインストール関連の状態
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -88,6 +93,9 @@ export default function App() {
 
   // DBデータのリアクティブロード
   const tasks = useLiveQuery(() => db.tasks.reverse().toArray()) || ([] as Task[]);
+
+  // 全レコードのリアクティブロード（カレンダー用）
+  const allRecords = useLiveQuery(() => db.records.toArray()) || ([] as DbRecord[]);
   
   // 各タスクの最新レコードをマップ化して取得
   const latestRecordsMap = useLiveQuery(async () => {
@@ -225,68 +233,95 @@ export default function App() {
         </div>
       </header>
 
+      {/* タブ切り替えバー */}
+      <div className="tab-bar-container" style={{ margin: '0 auto 16px auto', maxWidth: '600px', width: 'calc(100% - 32px)' }}>
+        <button 
+          className={`tab-btn ${activeTab === 'tasks' ? 'active' : ''}`}
+          onClick={() => setActiveTab('tasks')}
+        >
+          タスク一覧
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'calendar' ? 'active' : ''}`}
+          onClick={() => setActiveTab('calendar')}
+        >
+          カレンダー
+        </button>
+      </div>
+
       {/* メインレイアウト */}
       <main className="main-container">
-        
-        {/* タグによる絞り込みチップ */}
-        {allTags.length > 1 && (
-          <div className="tag-filter-container">
-            {allTags.map((tag) => (
-              <button
-                key={tag}
-                className={`tag-chip ${selectedTag === tag ? 'active' : ''}`}
-                onClick={() => setSelectedTag(tag)}
-              >
-                {tag === 'すべて' ? tag : `#${tag}`}
-              </button>
-            ))}
-          </div>
-        )}
+        {activeTab === 'tasks' ? (
+          <>
+            {/* タグによる絞り込みチップ */}
+            {allTags.length > 1 && (
+              <div className="tag-filter-container">
+                {allTags.map((tag) => (
+                  <button
+                    key={tag}
+                    className={`tag-chip ${selectedTag === tag ? 'active' : ''}`}
+                    onClick={() => setSelectedTag(tag)}
+                  >
+                    {tag === 'すべて' ? tag : `#${tag}`}
+                  </button>
+                ))}
+              </div>
+            )}
 
-        {/* タスク一覧 */}
-        <section className="task-list">
-          {filteredTasks.length === 0 ? (
-            <div className="empty-state">
-              <Filter size={32} className="empty-state-icon" />
-              <h3>タスクが見つかりません</h3>
-              <p>
-                {selectedTag !== 'すべて' 
-                  ? `タグ「#${selectedTag}」の登録タスクはありません。` 
-                  : '右下の「＋」ボタンから最初のタスクを作成しましょう！'}
-              </p>
-            </div>
-          ) : (
-            filteredTasks.map((task) => (
-              <SwipeableTaskCard
-                key={task.id}
-                task={task}
-                lastRecordTime={latestRecordsMap[task.id]}
-                onComplete={handleCompleteTask}
-                onEdit={(t) => {
-                  setEditingTask(t);
-                  setIsFormOpen(true);
-                }}
-                onShowHistory={(t) => {
-                  setSelectedTask(t);
-                  setIsDetailOpen(true);
-                }}
-              />
-            ))
-          )}
-        </section>
+            {/* タスク一覧 */}
+            <section className="task-list">
+              {filteredTasks.length === 0 ? (
+                <div className="empty-state">
+                  <Filter size={32} className="empty-state-icon" />
+                  <h3>タスクが見つかりません</h3>
+                  <p>
+                    {selectedTag !== 'すべて' 
+                      ? `タグ「#${selectedTag}」の登録タスクはありません。` 
+                      : '右下の「＋」ボタンから最初のタスクを作成しましょう！'}
+                  </p>
+                </div>
+              ) : (
+                filteredTasks.map((task) => (
+                  <SwipeableTaskCard
+                    key={task.id}
+                    task={task}
+                    lastRecordTime={latestRecordsMap[task.id]}
+                    onComplete={handleCompleteTask}
+                    onEdit={(t) => {
+                      setEditingTask(t);
+                      setIsFormOpen(true);
+                    }}
+                    onShowHistory={(t) => {
+                      setSelectedTask(t);
+                      setIsDetailOpen(true);
+                    }}
+                  />
+                ))
+              )}
+            </section>
+          </>
+        ) : (
+          <CalendarView 
+            tasks={tasks} 
+            records={allRecords} 
+            onDeleteRecord={handleDeleteRecord} 
+          />
+        )}
       </main>
 
       {/* フローティングアクションボタン(FAB) */}
-      <button 
-        className="fab" 
-        onClick={() => {
-          setEditingTask(null);
-          setIsFormOpen(true);
-        }}
-        title="タスクを追加"
-      >
-        <Plus size={28} />
-      </button>
+      {activeTab === 'tasks' && (
+        <button 
+          className="fab" 
+          onClick={() => {
+            setEditingTask(null);
+            setIsFormOpen(true);
+          }}
+          title="タスクを追加"
+        >
+          <Plus size={28} />
+        </button>
+      )}
 
       {/* タスク作成・編集モーダル */}
       <TaskFormModal

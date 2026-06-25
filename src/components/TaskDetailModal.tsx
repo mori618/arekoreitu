@@ -132,7 +132,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           {/* 履歴セクション */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <h3 className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Calendar size={14} /> 実行履歴 ({records.length}回)
+              <Calendar size={14} /> 直近3回の履歴（全{records.length}回）
             </h3>
 
             {records.length === 0 ? (
@@ -145,7 +145,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               </div>
             ) : (
               <div className="history-list">
-                {records.map((record) => {
+                {records.slice(0, 3).map((record) => {
                   const isEditing = editingRecordId === record.id;
                   return (
                     <div key={record.id} className="history-item" style={{ flexDirection: isEditing ? 'column' : 'row', alignItems: isEditing ? 'stretch' : 'center', gap: isEditing ? '12px' : '8px' }}>
