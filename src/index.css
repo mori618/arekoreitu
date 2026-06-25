@@ -35,6 +35,7 @@
   --task-indigo: #6366f1;
   --task-purple: #a855f7;
   --task-pink: #ec4899;
+  --logo-gradient: linear-gradient(120deg, #0f172a 30%, #4f46e5 100%);
 }
 
 [data-theme='dark'] {
@@ -53,6 +54,7 @@
   --glass-bg: rgba(15, 23, 42, 0.65);
   --glass-border: rgba(255, 255, 255, 0.06);
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --logo-gradient: linear-gradient(120deg, #ffffff 30%, #a5b4fc 100%);
 }
 
 * {
@@ -141,7 +143,7 @@ html, body {
 .logo h1 {
   font-size: 1.3rem;
   font-weight: 700;
-  background: linear-gradient(120deg, #ffffff 30%, #a5b4fc 100%);
+  background: var(--logo-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -0.02em;

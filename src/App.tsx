@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Plus, Settings, Sparkles, Filter, Download, X, Sun, Moon } from 'lucide-react';
+import { Plus, Settings, Filter, Download, X, Sun, Moon, Clock } from 'lucide-react';
 import { db, generateUUID } from './db';
 import type { Task, Record as DbRecord } from './db';
 import { SwipeableTaskCard } from './components/SwipeableTaskCard';
@@ -193,7 +193,7 @@ export default function App() {
       <header className="app-header glass-panel">
         <div className="logo">
           <div className="logo-icon">
-            <Sparkles size={20} color="#ffffff" />
+            <Clock size={20} color="#ffffff" />
           </div>
           <h1>イツヤッタ</h1>
         </div>
