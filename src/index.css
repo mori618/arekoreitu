@@ -539,7 +539,7 @@ html, body {
   background: var(--bg-card);
   border: 1px solid var(--border-card);
   border-radius: 18px;
-  padding: 16px 20px 16px 28px;
+  padding: 16px 20px 16px 44px;
   z-index: 2;
   cursor: grab;
   transition: border-color 0.3s ease, background-color 0.3s ease;
@@ -558,7 +558,7 @@ html, body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 16px;
+  width: 32px;
   bottom: 0;
   border-top-left-radius: 18px;
   border-bottom-left-radius: 18px;
