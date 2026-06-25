@@ -228,7 +228,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
                           height: '5px',
                           borderRadius: '50%',
                           backgroundColor: isSelected ? '#ffffff' : (task?.color || 'var(--text-muted)'),
-                          boxShadow: isSelected ? 'none' : `0 0 4px ${task?.color || '#000'}80`,
                         }}
                       />
                     ))}

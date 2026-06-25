@@ -153,10 +153,10 @@ export const SwipeableTaskCard: React.FC<SwipeableTaskCardProps> = ({
         animate={controls}
         whileTap={{ cursor: 'grabbing' }}
       >
-        {/* タスクカラーを表す左側の細いバー */}
+        {/* タスクカラーを表す左側のバー */}
         <div 
           className="task-card-glow" 
-          style={{ backgroundColor: task.color, boxShadow: `0 0 10px ${task.color}80` }}
+          style={{ backgroundColor: task.color }}
         />
 
         <div className="task-card-header">
