@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Plus, Settings, Sparkles, Filter, Download, X } from 'lucide-react';
+import { Plus, Settings, Sparkles, Filter, Download, X, Sun, Moon } from 'lucide-react';
 import { db, generateUUID } from './db';
 import type { Task, Record as DbRecord } from './db';
 import { SwipeableTaskCard } from './components/SwipeableTaskCard';
@@ -17,6 +17,16 @@ export default function App() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBtn, setShowInstallBtn] = useState(false);
   const [isInstallHelpOpen, setIsInstallHelpOpen] = useState(false);
+
+  // テーマ関連の状態
+  const [theme, setTheme] = useState<'dark' | 'light'>(
+    () => (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
+  );
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     // すでにスタンドアロンモード（アプリモード）で起動しているかチェック
@@ -189,6 +199,13 @@ export default function App() {
               <Download size={18} />
             </button>
           )}
+          <button
+            className="btn-icon"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            title={theme === 'dark' ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
           <button 
             className="btn-icon" 
             onClick={() => setIsSettingsOpen(true)}

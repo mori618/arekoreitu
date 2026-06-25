@@ -3,7 +3,7 @@
 :root {
   --font-primary: 'Outfit', 'Noto Sans JP', 'Inter', system-ui, -apple-system, sans-serif;
   
-  /* ダークテーマ用カラーパレット */
+  /* デフォルト: ダークテーマ用カラーパレット */
   --bg-main: #070a13;
   --bg-gradient: linear-gradient(135deg, #070a13 0%, #0c1122 50%, #090c16 100%);
   --bg-card: rgba(30, 41, 59, 0.45);
@@ -35,6 +35,24 @@
   --task-indigo: #6366f1;
   --task-purple: #a855f7;
   --task-pink: #ec4899;
+}
+
+[data-theme='light'] {
+  /* ライトテーマ用カラーパレット */
+  --bg-main: #f8fafc;
+  --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+  --bg-card: rgba(255, 255, 255, 0.7);
+  --bg-card-hover: rgba(255, 255, 255, 0.95);
+  --border-card: rgba(15, 23, 42, 0.08);
+  --border-glow: rgba(99, 102, 241, 0.08);
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(15, 23, 42, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(148, 163, 184, 0.15);
 }
 
 * {
