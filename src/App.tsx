@@ -167,6 +167,15 @@ export default function App() {
     await db.records.delete(recordId);
   };
 
+  // ハンドラー: 履歴日時の更新
+  const handleUpdateRecordTime = async (recordId: string, newExecutedAt: number) => {
+    if (newExecutedAt > Date.now()) {
+      alert('未来の日付には変更できません。');
+      return;
+    }
+    await db.records.update(recordId, { executedAt: newExecutedAt });
+  };
+
   // ハンドラー: タスクの削除 (履歴もカスケード削除)
   const handleDeleteTask = async (taskId: string) => {
     await db.transaction('rw', [db.tasks, db.records], async () => {
@@ -302,6 +311,7 @@ export default function App() {
         }}
         onDeleteRecord={handleDeleteRecord}
         onDeleteTask={handleDeleteTask}
+        onUpdateRecordTime={handleUpdateRecordTime}
       />
       {/* アプリ設定・エクスポート復元モーダル */}
       <SettingsModal

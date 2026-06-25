@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Trash2, Calendar, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Trash2, Calendar, AlertCircle, Edit2, Save, Undo2 } from 'lucide-react';
 import type { Task, Record as DbRecord } from '../db';
 
 interface TaskDetailModalProps {
@@ -9,6 +9,7 @@ interface TaskDetailModalProps {
   onClose: () => void;
   onDeleteRecord: (recordId: string) => void;
   onDeleteTask: (taskId: string) => void;
+  onUpdateRecordTime: (recordId: string, newExecutedAt: number) => void;
 }
 
 export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
@@ -18,7 +19,11 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   onClose,
   onDeleteRecord,
   onDeleteTask,
+  onUpdateRecordTime,
 }) => {
+  const [editingRecordId, setEditingRecordId] = useState<string | null>(null);
+  const [tempDatetime, setTempDatetime] = useState<string>('');
+
   if (!isOpen || !task) return null;
 
   const handleDeleteTask = () => {
@@ -58,6 +63,31 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     const days = Math.floor(diff / day);
     if (days === 1) return '昨日';
     return `${days}日前`;
+  };
+
+  const toDatetimeLocalString = (timestamp: number) => {
+    const d = new Date(timestamp);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const handleStartEdit = (recordId: string, currentTimestamp: number) => {
+    setEditingRecordId(recordId);
+    setTempDatetime(toDatetimeLocalString(currentTimestamp));
+  };
+
+  const handleSaveEdit = (recordId: string) => {
+    const timestamp = new Date(tempDatetime).getTime();
+    if (isNaN(timestamp)) {
+      alert('無効な日時です。');
+      return;
+    }
+    if (timestamp > Date.now()) {
+      alert('未来の日付には変更できません。');
+      return;
+    }
+    onUpdateRecordTime(recordId, timestamp);
+    setEditingRecordId(null);
   };
 
   return (
@@ -115,22 +145,66 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               </div>
             ) : (
               <div className="history-list">
-                {records.map((record) => (
-                  <div key={record.id} className="history-item">
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      <span className="history-time">{formatDate(record.executedAt)}</span>
-                      <span className="history-relative">{getRelativeTime(record.executedAt)}</span>
+                {records.map((record) => {
+                  const isEditing = editingRecordId === record.id;
+                  return (
+                    <div key={record.id} className="history-item" style={{ flexDirection: isEditing ? 'column' : 'row', alignItems: isEditing ? 'stretch' : 'center', gap: isEditing ? '12px' : '8px' }}>
+                      {isEditing ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                          <label className="form-label" style={{ fontSize: '0.75rem' }}>日時の編集 (過去のみ)</label>
+                          <input
+                            type="datetime-local"
+                            className="form-input"
+                            style={{ padding: '8px 12px', fontSize: '0.9rem', width: '100%' }}
+                            value={tempDatetime}
+                            max={toDatetimeLocalString(Date.now())}
+                            onChange={(e) => setTempDatetime(e.target.value)}
+                          />
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                            <button
+                              className="btn btn-secondary"
+                              style={{ padding: '6px 12px', fontSize: '0.8rem', borderRadius: '8px' }}
+                              onClick={() => setEditingRecordId(null)}
+                            >
+                              <Undo2 size={14} /> キャンセル
+                            </button>
+                            <button
+                              className="btn btn-primary"
+                              style={{ padding: '6px 12px', fontSize: '0.8rem', borderRadius: '8px' }}
+                              onClick={() => handleSaveEdit(record.id)}
+                            >
+                              <Save size={14} /> 保存
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 }}>
+                            <span className="history-time">{formatDate(record.executedAt)}</span>
+                            <span className="history-relative">{getRelativeTime(record.executedAt)}</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button
+                              className="task-card-btn"
+                              onClick={() => handleStartEdit(record.id, record.executedAt)}
+                              title="この履歴を編集"
+                            >
+                              <Edit2 size={15} />
+                            </button>
+                            <button
+                              className="task-card-btn"
+                              onClick={() => onDeleteRecord(record.id)}
+                              style={{ color: '#ef4444' }}
+                              title="この履歴を削除"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <button
-                      className="task-card-btn"
-                      onClick={() => onDeleteRecord(record.id)}
-                      style={{ color: '#ef4444' }}
-                      title="この履歴を削除"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
