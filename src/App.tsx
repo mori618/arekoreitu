@@ -20,7 +20,7 @@ export default function App() {
 
   // テーマ関連の状態
   const [theme, setTheme] = useState<'dark' | 'light'>(
-    () => (localStorage.getItem('theme') as 'dark' | 'light') || 'dark'
+    () => (localStorage.getItem('theme') as 'dark' | 'light') || 'light'
   );
 
   useEffect(() => {
