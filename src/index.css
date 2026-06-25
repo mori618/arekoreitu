@@ -82,23 +82,14 @@ html, body {
   flex-direction: column;
 }
 
-/* スクロールバーのカスタマイズ */
+/* スクロールバーを完全に非表示にする */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  display: none; /* Chrome, Safari, Opera */
 }
 
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: 99px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
 }
 
 /* ガラスモーフィズムユーティリティ */

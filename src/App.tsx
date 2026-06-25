@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Plus, Settings, Filter, Download, X, Sun, Moon, Clock } from 'lucide-react';
+import { Plus, Settings, Filter, Download, X, Sun, Moon, Clock, HelpCircle } from 'lucide-react';
 import { db, generateUUID } from './db';
 import type { Task, Record as DbRecord } from './db';
 import { SwipeableTaskCard } from './components/SwipeableTaskCard';
@@ -8,12 +8,14 @@ import { TaskFormModal } from './components/TaskFormModal';
 import { TaskDetailModal } from './components/TaskDetailModal';
 import { SettingsModal } from './components/SettingsModal';
 import { CalendarView } from './components/CalendarView';
+import { HelpModal } from './components/HelpModal';
 
 export default function App() {
   // モーダル表示状態
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // タブ選択状態
   const [activeTab, setActiveTab] = useState<'tasks' | 'calendar'>('tasks');
@@ -272,6 +274,13 @@ export default function App() {
           >
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
+          <button
+            className="btn-icon"
+            onClick={() => setIsHelpOpen(true)}
+            title="使い方を見る"
+          >
+            <HelpCircle size={20} />
+          </button>
           <button 
             className="btn-icon" 
             onClick={() => setIsSettingsOpen(true)}
@@ -433,6 +442,12 @@ export default function App() {
         onDataImported={() => {
           // インポート時に必要に応じて処理（Dexieはライブバインドなので自動更新されます）
         }}
+      />
+
+      {/* 使い方モーダル */}
+      <HelpModal
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
       />
 
       {/* iOSインストールガイドモーダル */}
