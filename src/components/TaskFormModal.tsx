@@ -32,7 +32,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
 }) => {
   const [name, setName] = useState('');
   const [color, setColor] = useState(COLOR_PALETTE[6]); // デフォルトはインディゴ
-  const [tagsInput, setTagsInput] = useState('');
+  const [tagsInput, setTagsInput] = useState('掃除, 習慣');
 
   // 編集モードの場合の初期値設定
   useEffect(() => {
@@ -43,7 +43,7 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
     } else {
       setName('');
       setColor(COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)]); // ランダムに初期色を決定
-      setTagsInput('');
+      setTagsInput('掃除, 習慣');
     }
   }, [editingTask, isOpen]);
 
@@ -109,21 +109,6 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
             />
           </div>
 
-          {/* カラー選択 */}
-          <div className="form-group">
-            <label className="form-label">テーマカラー</label>
-            <div className="color-palette">
-              {COLOR_PALETTE.map((c) => (
-                <div
-                  key={c}
-                  className={`color-option ${color === c ? 'selected' : ''}`}
-                  style={{ backgroundColor: c }}
-                  onClick={() => setColor(c)}
-                />
-              ))}
-            </div>
-          </div>
-
           {/* タグ入力 */}
           <div className="form-group">
             <label className="form-label">タグ (カンマ区切り)</label>
@@ -153,6 +138,21 @@ export const TaskFormModal: React.FC<TaskFormModalProps> = ({
                 </div>
               </div>
             )}
+          </div>
+
+          {/* カラー選択 */}
+          <div className="form-group">
+            <label className="form-label">テーマカラー</label>
+            <div className="color-palette">
+              {COLOR_PALETTE.map((c) => (
+                <div
+                  key={c}
+                  className={`color-option ${color === c ? 'selected' : ''}`}
+                  style={{ backgroundColor: c }}
+                  onClick={() => setColor(c)}
+                />
+              ))}
+            </div>
           </div>
 
           {/* アクションボタン */}
